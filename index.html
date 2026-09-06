@@ -1319,133 +1319,93 @@
        */
 
 
-      function sendFoodClaim(
-        participantId,
-        foodTypeId
-      ) {
+function sendFoodClaim(
+  participantId,
+  foodTypeId
+) {
 
-        const callbackName =
-          "foodClaimCallback_" +
-          Date.now();
+  const callbackName =
+    "foodClaimCallback_" + Date.now();
 
+  window[callbackName] =
+    function(response) {
 
-        window[callbackName] =
-        function(response) {
+      try {
 
-          try {
+        console.log(
+          "Food Claim API response:",
+          response
+        );
 
-            console.log(
-              "Food Claim API response:",
-              response
-            );
+        showFoodResult(
+          response,
+          participantId,
+          foodTypeId
+        );
 
-            showFoodResult(
-              response,
-              participantId,
-              foodTypeId
-            );
+      } catch (error) {
 
-          } catch (error) {
+        console.error(
+          "Food result error:",
+          error
+        );
 
-            console.error(
-              "Food result error:",
-              error
-            );
+        showResult(
+          "❌ Food claim response error.",
+          "denied"
+        );
 
-            showResult(
-              "❌ Food claim response error.",
-              "denied"
-            );
+      } finally {
 
-          } finally {
+        processing = false;
 
-            processing = false;
+        delete window[callbackName];
 
-            const script =
-              document.getElementById(
-                callbackName
-              );
-
-            if (script) {
-              script.remove();
-            }
-
-            delete window[callbackName];
-
-            setTimeout(
-              function() {
-
-                scanning = false;
-
-                startScanner();
-
-              },
-              500
-            );
-
-          }
-
-        };
-
-
-              const script =
-                document.getElementById(
-                  callbackName
-                );
-
-
-              if (script) {
-                script.remove();
-              }
-
-            }
-
-          };
-
-
-        const url =
-          APPS_SCRIPT_URL +
-
-          "?api=food" +
-
-          "&participantId=" +
-          encodeURIComponent(
-            participantId
-          ) +
-
-          "&foodTypeId=" +
-          encodeURIComponent(
-            foodTypeId
-          ) +
-
-          "&scannerId=" +
-          encodeURIComponent(
-            SCANNER_ID
-          ) +
-
-          "&volunteerId=" +
-          encodeURIComponent(
-            VOLUNTEER_ID
-          ) +
-
-          "&callback=" +
-          encodeURIComponent(
+        const script =
+          document.getElementById(
             callbackName
           );
 
+        if (script) {
+          script.remove();
+        }
 
-        console.log(
-          "Food Claim URL:",
-          url
-        );
-
-
-        injectJsonp(
-          callbackName,
-          url
+        setTimeout(
+          function() {
+            restartScanner();
+          },
+          500
         );
 
       }
+
+    };
+
+  const url =
+    APPS_SCRIPT_URL +
+    "?api=food" +
+    "&participantId=" +
+    encodeURIComponent(participantId) +
+    "&foodTypeId=" +
+    encodeURIComponent(foodTypeId) +
+    "&scannerId=" +
+    encodeURIComponent(SCANNER_ID) +
+    "&volunteerId=" +
+    encodeURIComponent(VOLUNTEER_ID) +
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+  console.log(
+    "Food Claim URL:",
+    url
+  );
+
+  injectJsonp(
+    callbackName,
+    url
+  );
+
+}
 
 
       /*
