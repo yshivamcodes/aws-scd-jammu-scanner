@@ -4,20 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>AWS SCD Jammu 2026 — Check-in</title>
+  <title>AWS SCD Jammu 2026 — Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript">
+  </script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 16px;
       background: #f3f4f6;
-      text-align: center;
     }
 
     .container {
+      width: 100%;
       max-width: 600px;
       margin: auto;
       background: white;
@@ -27,22 +34,44 @@
     }
 
     h1 {
+      text-align: center;
       margin: 0;
       font-size: 25px;
     }
 
     .subtitle {
+      text-align: center;
+      color: #666;
       margin-top: 6px;
       margin-bottom: 20px;
-      color: #666;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    select {
+      width: 100%;
+      padding: 13px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
     }
 
     .scanner-info {
       background: #f0f0f0;
       padding: 12px;
       border-radius: 8px;
-      margin-bottom: 15px;
+      margin-bottom: 18px;
       font-size: 14px;
+      line-height: 1.6;
     }
 
     #reader {
@@ -55,8 +84,9 @@
       margin-top: 20px;
       padding: 18px;
       border-radius: 10px;
-      font-size: 19px;
+      font-size: 18px;
       font-weight: bold;
+      text-align: center;
       word-break: break-word;
       background: #eeeeee;
     }
@@ -76,9 +106,16 @@
       color: #765600;
     }
 
+    .participant {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: normal;
+    }
+
     button {
+      width: 100%;
       margin-top: 18px;
-      padding: 13px 24px;
+      padding: 14px;
       border: none;
       border-radius: 8px;
       background: #222;
@@ -89,12 +126,29 @@
 
     button:disabled {
       opacity: 0.5;
+      cursor: not-allowed;
     }
 
-    .participant {
-      margin-top: 10px;
-      font-size: 15px;
-      font-weight: normal;
+    .hidden {
+      display: none;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .mode-button {
+      flex: 1;
+      margin-top: 0;
+      background: #ddd;
+      color: #222;
+    }
+
+    .mode-button.active {
+      background: #222;
+      color: white;
     }
   </style>
 </head>
@@ -106,22 +160,97 @@
   <h1>AWS SCD Jammu 2026</h1>
 
   <div class="subtitle">
-    Event Check-in Scanner
+    Digital Event Scanner
   </div>
+
+
+  <!-- MODE SELECTION -->
+
+  <div class="section">
+
+    <label>Scanner Mode</label>
+
+    <div class="mode-buttons">
+
+      <button
+        id="eventModeButton"
+        class="mode-button active"
+        onclick="setMode('event')">
+        Event Check-in
+      </button>
+
+      <button
+        id="sessionModeButton"
+        class="mode-button"
+        onclick="setMode('session')">
+        Session Entry
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- SESSION SELECTION -->
+
+  <div
+    id="sessionSection"
+    class="section hidden">
+
+    <label for="sessionSelect">
+      Select Session
+    </label>
+
+    <select id="sessionSelect">
+
+      <option value="">
+        Loading sessions...
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- SCANNER INFORMATION -->
 
   <div class="scanner-info">
-    Scanner: <strong>SCD26-SC001</strong><br>
-    Volunteer: <strong>SCD26-V001</strong>
+
+    Scanner:
+    <strong id="scannerDisplay">
+      SCD26-SC001
+    </strong>
+
+    <br>
+
+    Volunteer:
+    <strong>
+      SCD26-V001
+    </strong>
+
   </div>
 
+
+  <!-- QR CAMERA -->
+
   <div id="reader"></div>
+
+
+  <!-- RESULT -->
 
   <div id="result">
     Point the camera at a participant QR code.
   </div>
 
-  <button id="restartButton" onclick="restartScanner()">
+
+  <!-- NEXT SCAN -->
+
+  <button
+    id="nextButton"
+    onclick="restartScanner()">
+
     Scan Next Participant
+
   </button>
 
 </div>
@@ -129,274 +258,864 @@
 
 <script>
 
-  /*
-   * YOUR APPS SCRIPT WEB APP URL
-   */
-  const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbw-5L64mgPOq8P6nmz8V3RNUQX6K43fad5N-RhNVhgUc9PkUn3PXKmeL-TRVGvlENgV/exec";
+
+/*
+ * =====================================================
+ * CONFIGURATION
+ * =====================================================
+ */
 
 
-  const SCANNER_ID = "SCD26-SC001";
-  const VOLUNTEER_ID = "SCD26-V001";
-
-  let scanner = null;
-  let scanning = false;
-  let processing = false;
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbw-5L64mgPOq8P6nmz8V3RNUQX6K43fad5N-RhNVhgUc9PkUn3PXKmeL-TRVGvlENgV/exec";
 
 
-  function showResult(message, className = "") {
+const SCANNER_ID =
+  "SCD26-SC001";
 
-    const result =
-      document.getElementById("result");
 
-    result.innerHTML = message;
-    result.className = className;
+const VOLUNTEER_ID =
+  "SCD26-V001";
+
+
+/*
+ * =====================================================
+ * STATE
+ * =====================================================
+ */
+
+
+let currentMode =
+  "event";
+
+
+let scanner =
+  null;
+
+
+let scanning =
+  false;
+
+
+let processing =
+  false;
+
+
+/*
+ * =====================================================
+ * UI HELPERS
+ * =====================================================
+ */
+
+
+function showResult(message, className = "") {
+
+  const result =
+    document.getElementById("result");
+
+  result.innerHTML =
+    message;
+
+  result.className =
+    className;
+}
+
+
+function setMode(mode) {
+
+  if (processing) {
+    return;
   }
 
 
-  function startScanner() {
-
-    if (scanning || processing) {
-      return;
-    }
-
-    scanner =
-      new Html5Qrcode("reader");
+  currentMode =
+    mode;
 
 
-    scanner.start(
-      {
-        facingMode: "environment"
-      },
-
-      {
-        fps: 10,
-
-        qrbox: {
-          width: 250,
-          height: 250
-        }
-      },
+  const eventButton =
+    document.getElementById("eventModeButton");
 
 
-      function(decodedText) {
+  const sessionButton =
+    document.getElementById("sessionModeButton");
 
-        if (processing) {
+
+  const sessionSection =
+    document.getElementById("sessionSection");
+
+
+  if (mode === "event") {
+
+    eventButton.classList.add("active");
+
+    sessionButton.classList.remove("active");
+
+    sessionSection.classList.add("hidden");
+
+  } else {
+
+    eventButton.classList.remove("active");
+
+    sessionButton.classList.add("active");
+
+    sessionSection.classList.remove("hidden");
+
+  }
+
+
+  showResult(
+    "Point the camera at a participant QR code."
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * LOAD SESSIONS
+ * =====================================================
+ */
+
+
+function loadSessions() {
+
+  const callbackName =
+    "sessionCallback_" +
+    Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        const select =
+          document.getElementById("sessionSelect");
+
+
+        select.innerHTML = "";
+
+
+        if (
+          !response ||
+          !response.success ||
+          !response.sessions ||
+          response.sessions.length === 0
+        ) {
+
+          const option =
+            document.createElement("option");
+
+          option.value = "";
+
+          option.textContent =
+            "No active sessions available";
+
+          select.appendChild(option);
+
           return;
         }
 
-        processing = true;
-        scanning = false;
 
-        processCheckin(decodedText);
-      },
+        response.sessions.forEach(
+          function(session) {
 
+            const option =
+              document.createElement("option");
 
-      function(errorMessage) {
-        // Normal scanning errors are ignored.
-      }
+            option.value =
+              session.sessionId;
 
-    )
+            option.textContent =
+              session.name +
+              " — " +
+              session.sessionId;
 
-    .then(function() {
+            select.appendChild(option);
 
-      scanning = true;
-
-      showResult(
-        "Camera active.<br>Point it at a participant QR code."
-      );
-
-    })
-
-    .catch(function(error) {
-
-      scanning = false;
-
-      showResult(
-        "Camera failed:<br>" + error,
-        "denied"
-      );
-
-    });
-  }
-
-
-  function processCheckin(scannedValue) {
-
-    showResult(
-      "⏳ Checking participant...<div class='participant'>" +
-      escapeHtml(scannedValue) +
-      "</div>",
-      "processing"
-    );
-
-
-    if (scanner) {
-
-      scanner.stop()
-        .catch(function(error) {
-          console.log(error);
-        });
-    }
-
-
-    /*
-     * The QR currently contains the participant ID.
-     *
-     * Example:
-     * SCD26-P00002
-     */
-
-    const participantId =
-      String(scannedValue).trim();
-
-
-    /*
-     * JSONP callback name
-     */
-
-    const callbackName =
-      "scdCallback_" +
-      Date.now();
-
-
-    window[callbackName] =
-      function(response) {
-
-        try {
-
-          handleCheckinResponse(
-            response,
-            participantId
-          );
-
-        } finally {
-
-          delete window[callbackName];
-
-          const script =
-            document.getElementById(callbackName);
-
-          if (script) {
-            script.remove();
           }
-        }
-      };
+        );
 
-
-    const url =
-      APPS_SCRIPT_URL +
-      "?api=checkin" +
-      "&participantId=" +
-      encodeURIComponent(participantId) +
-      "&scannerId=" +
-      encodeURIComponent(SCANNER_ID) +
-      "&volunteerId=" +
-      encodeURIComponent(VOLUNTEER_ID) +
-      "&callback=" +
-      encodeURIComponent(callbackName);
-
-
-    const script =
-      document.createElement("script");
-
-    script.id = callbackName;
-    script.src = url;
-
-    script.onerror =
-      function() {
+      } finally {
 
         delete window[callbackName];
 
-        showResult(
-          "❌ Unable to contact the check-in server.",
-          "denied"
-        );
+        const script =
+          document.getElementById(callbackName);
 
-        processing = false;
-      };
+        if (script) {
+          script.remove();
+        }
 
-
-    document.body.appendChild(script);
-  }
-
-
-  function handleCheckinResponse(
-    response,
-    participantId
-  ) {
-
-    if (
-      response &&
-      response.success === true &&
-      response.result === "APPROVED"
-    ) {
-
-      showResult(
-        "🟢 CHECK-IN APPROVED" +
-        "<div class='participant'>" +
-        "Participant: " +
-        escapeHtml(participantId) +
-        "<br>" +
-        escapeHtml(response.reason || "") +
-        "</div>",
-        "approved"
-      );
-
-    } else {
-
-      showResult(
-        "🔴 CHECK-IN DENIED" +
-        "<div class='participant'>" +
-        "Participant: " +
-        escapeHtml(participantId) +
-        "<br>" +
-        escapeHtml(
-          response && response.reason
-            ? response.reason
-            : "Check-in could not be approved."
-        ) +
-        "</div>",
-        "denied"
-      );
-    }
-  }
-
-
-  function restartScanner() {
-
-    processing = false;
-
-    document.getElementById("reader").innerHTML = "";
-
-    showResult(
-      "Starting camera..."
-    );
-
-    setTimeout(
-      startScanner,
-      300
-    );
-  }
-
-
-  function escapeHtml(value) {
-
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-
-  window.onload =
-    function() {
-
-      startScanner();
+      }
 
     };
+
+
+  const url =
+    APPS_SCRIPT_URL +
+    "?api=sessions" +
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
+    url;
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      showResult(
+        "❌ Unable to load sessions.",
+        "denied"
+      );
+
+    };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+/*
+ * =====================================================
+ * START CAMERA
+ * =====================================================
+ */
+
+
+function startScanner() {
+
+  if (
+    scanning ||
+    processing
+  ) {
+    return;
+  }
+
+
+  scanner =
+    new Html5Qrcode("reader");
+
+
+  scanner.start(
+
+    {
+      facingMode: "environment"
+    },
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+
+    },
+
+
+    function(decodedText) {
+
+      if (processing) {
+        return;
+      }
+
+
+      processing =
+        true;
+
+
+      scanning =
+        false;
+
+
+      processScan(decodedText);
+
+    },
+
+
+    function(errorMessage) {
+
+      // Normal QR scanning errors are ignored.
+
+    }
+
+  )
+
+  .then(function() {
+
+    scanning =
+      true;
+
+
+    showResult(
+      "Camera active.<br>" +
+      "Point it at a participant QR code."
+    );
+
+  })
+
+  .catch(function(error) {
+
+    scanning =
+      false;
+
+
+    showResult(
+      "Camera failed:<br>" +
+      escapeHtml(error),
+      "denied"
+    );
+
+  });
+
+}
+
+
+/*
+ * =====================================================
+ * PROCESS SCAN
+ * =====================================================
+ */
+
+
+function processScan(scannedValue) {
+
+
+  showResult(
+
+    "⏳ Processing scan..." +
+
+    "<div class='participant'>" +
+
+    escapeHtml(scannedValue) +
+
+    "</div>",
+
+    "processing"
+
+  );
+
+
+  if (scanner) {
+
+    scanner.stop()
+      .catch(function(error) {
+
+        console.log(
+          "Scanner stop error:",
+          error
+        );
+
+      });
+
+  }
+
+
+  const participantId =
+    String(scannedValue).trim();
+
+
+  /*
+   * EVENT CHECK-IN
+   */
+
+
+  if (currentMode === "event") {
+
+    sendEventCheckin(
+      participantId
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * SESSION ENTRY
+   */
+
+
+  const sessionId =
+    document.getElementById(
+      "sessionSelect"
+    ).value;
+
+
+  if (!sessionId) {
+
+    showResult(
+      "❌ Please select a session first.",
+      "denied"
+    );
+
+    processing =
+      false;
+
+    return;
+
+  }
+
+
+  sendSessionScan(
+    participantId,
+    sessionId
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * EVENT CHECK-IN API
+ * =====================================================
+ */
+
+
+function sendEventCheckin(
+  participantId
+) {
+
+  const callbackName =
+    "checkinCallback_" +
+    Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        showCheckinResult(
+          response,
+          participantId
+        );
+
+      } finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(callbackName);
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const url =
+    APPS_SCRIPT_URL +
+
+    "?api=checkin" +
+
+    "&participantId=" +
+    encodeURIComponent(participantId) +
+
+    "&scannerId=" +
+    encodeURIComponent(SCANNER_ID) +
+
+    "&volunteerId=" +
+    encodeURIComponent(VOLUNTEER_ID) +
+
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  injectJsonp(
+    callbackName,
+    url
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * SESSION SCAN API
+ * =====================================================
+ */
+
+
+function sendSessionScan(
+  participantId,
+  sessionId
+) {
+
+  const callbackName =
+    "sessionScanCallback_" +
+    Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        showSessionResult(
+          response,
+          participantId,
+          sessionId
+        );
+
+      } finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(callbackName);
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const url =
+    APPS_SCRIPT_URL +
+
+    "?api=session" +
+
+    "&participantId=" +
+    encodeURIComponent(participantId) +
+
+    "&sessionId=" +
+    encodeURIComponent(sessionId) +
+
+    "&scannerId=" +
+    encodeURIComponent(SCANNER_ID) +
+
+    "&volunteerId=" +
+    encodeURIComponent(VOLUNTEER_ID) +
+
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  injectJsonp(
+    callbackName,
+    url
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * JSONP REQUEST
+ * =====================================================
+ */
+
+
+function injectJsonp(
+  callbackName,
+  url
+) {
+
+  const script =
+    document.createElement("script");
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
+    url;
+
+
+  script.onerror =
+    function() {
+
+      showResult(
+        "❌ Unable to contact the check-in server.",
+        "denied"
+      );
+
+
+      processing =
+        false;
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * EVENT RESULT
+ * =====================================================
+ */
+
+
+function showCheckinResult(
+  response,
+  participantId
+) {
+
+  if (
+    response &&
+    response.success === true &&
+    response.result === "APPROVED"
+  ) {
+
+    showResult(
+
+      "🟢 CHECK-IN APPROVED" +
+
+      "<div class='participant'>" +
+
+      "Participant: " +
+
+      escapeHtml(participantId) +
+
+      "<br>" +
+
+      escapeHtml(
+        response.reason || ""
+      ) +
+
+      "</div>",
+
+      "approved"
+
+    );
+
+  } else {
+
+    showResult(
+
+      "🔴 CHECK-IN DENIED" +
+
+      "<div class='participant'>" +
+
+      "Participant: " +
+
+      escapeHtml(participantId) +
+
+      "<br>" +
+
+      escapeHtml(
+
+        response &&
+        response.reason
+
+          ? response.reason
+
+          : "Check-in could not be approved."
+
+      ) +
+
+      "</div>",
+
+      "denied"
+
+    );
+
+  }
+
+}
+
+
+/*
+ * =====================================================
+ * SESSION RESULT
+ * =====================================================
+ */
+
+
+function showSessionResult(
+  response,
+  participantId,
+  sessionId
+) {
+
+  if (
+    response &&
+    response.success === true &&
+    response.result === "APPROVED"
+  ) {
+
+    showResult(
+
+      "🟢 SESSION ACCESS APPROVED" +
+
+      "<div class='participant'>" +
+
+      "Participant: " +
+
+      escapeHtml(participantId) +
+
+      "<br>" +
+
+      "Session: " +
+
+      escapeHtml(sessionId) +
+
+      "<br>" +
+
+      escapeHtml(
+        response.reason || ""
+      ) +
+
+      "</div>",
+
+      "approved"
+
+    );
+
+  } else {
+
+    showResult(
+
+      "🔴 SESSION ACCESS DENIED" +
+
+      "<div class='participant'>" +
+
+      "Participant: " +
+
+      escapeHtml(participantId) +
+
+      "<br>" +
+
+      "Session: " +
+
+      escapeHtml(sessionId) +
+
+      "<br>" +
+
+      escapeHtml(
+
+        response &&
+        response.reason
+
+          ? response.reason
+
+          : "Session access denied."
+
+      ) +
+
+      "</div>",
+
+      "denied"
+
+    );
+
+  }
+
+}
+
+
+/*
+ * =====================================================
+ * RESTART
+ * =====================================================
+ */
+
+
+function restartScanner() {
+
+  processing =
+    false;
+
+
+  document.getElementById(
+    "reader"
+  ).innerHTML = "";
+
+
+  showResult(
+    "Starting camera..."
+  );
+
+
+  setTimeout(
+    startScanner,
+    300
+  );
+
+}
+
+
+/*
+ * =====================================================
+ * HTML ESCAPE
+ * =====================================================
+ */
+
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/*
+ * =====================================================
+ * INITIALIZE
+ * =====================================================
+ */
+
+
+window.onload =
+  function() {
+
+    loadSessions();
+
+    startScanner();
+
+  };
 
 </script>
 
