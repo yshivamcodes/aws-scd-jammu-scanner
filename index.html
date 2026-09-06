@@ -1033,12 +1033,14 @@ function sendFoodClaim(
     "foodClaimCallback_" + Date.now();
 
   window[callbackName] =
-    function(response) {
+  function(response) {
 
-      console.log(
-        "Food Claim API response:",
-        response
-      );
+    console.log(
+      "Food Claim API response:",
+      response
+    );
+
+    try {
 
       showFoodResult(
         response,
@@ -1046,8 +1048,40 @@ function sendFoodClaim(
         foodTypeId
       );
 
+    } catch (error) {
+
+      console.error(
+        "Food result display error:",
+        error
+      );
+
+      showResult(
+        response && response.success
+          ? "✅ Food claim approved."
+          : "❌ Food claim denied.",
+        response && response.success
+          ? "approved"
+          : "denied"
+      );
+
+    } finally {
+
       processing = false;
 
+      const script =
+        document.getElementById(
+          callbackName
+        );
+
+      if (script) {
+        script.remove();
+      }
+
+      delete window[callbackName];
+
+    }
+
+  };
       const script =
         document.getElementById(
           callbackName
