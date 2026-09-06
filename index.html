@@ -1410,6 +1410,8 @@ window[callbackName] =
     } finally {
 
       processing = false;
+      scanning = false;
+      startScanner();
 
       const script =
         document.getElementById(
