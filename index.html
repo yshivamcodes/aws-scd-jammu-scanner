@@ -819,6 +819,35 @@ function processScan(scannedValue) {
 
   }
 
+  /*
+   * FOOD CLAIM
+   */
+  if (currentMode === "food") {
+
+    const foodTypeId =
+      document.getElementById(
+         "foodSelect"
+      ).value;
+
+    if (!foodTypeId) {
+
+      showResult(
+        "❌ Please select a food item first.",
+        "denied"
+      );
+
+      processing = false;
+
+      return;
+    }
+
+    sendFoodClaim(
+      participantId,
+      foodTypeId
+    );
+
+    return;
+}
 
   /*
    * SESSION ENTRY
