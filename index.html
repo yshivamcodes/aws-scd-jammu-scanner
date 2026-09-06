@@ -1391,7 +1391,7 @@ function sendFoodClaim(
     Date.now();
 
 
-window[callbackName] =
+  window[callbackName] =
   function(response) {
 
     try {
@@ -1407,11 +1407,21 @@ window[callbackName] =
         foodTypeId
       );
 
+    } catch (error) {
+
+      console.error(
+        "Food result error:",
+        error
+      );
+
+      showResult(
+        "❌ Food claim response error.",
+        "denied"
+      );
+
     } finally {
 
       processing = false;
-      scanning = false;
-      startScanner();
 
       const script =
         document.getElementById(
@@ -1423,6 +1433,17 @@ window[callbackName] =
       }
 
       delete window[callbackName];
+
+      setTimeout(
+        function() {
+
+          scanning = false;
+
+          startScanner();
+
+        },
+        500
+      );
 
     }
 
