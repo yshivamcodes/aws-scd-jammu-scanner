@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>AWS SCD Jammu 2026 — Scanner</title>
 
@@ -12,6 +17,7 @@
   </script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -150,14 +156,20 @@
       background: #222;
       color: white;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
 
+
   <h1>AWS SCD Jammu 2026</h1>
+
 
   <div class="subtitle">
     Digital Event Scanner
@@ -168,7 +180,9 @@
 
   <div class="section">
 
-    <label>Scanner Mode</label>
+    <label>
+      Scanner Mode
+    </label>
 
     <div class="mode-buttons">
 
@@ -219,7 +233,7 @@
   </div>
 
 
-    <!-- FOOD SELECTION -->
+  <!-- FOOD SELECTION -->
 
   <div
     id="foodSection"
@@ -267,7 +281,9 @@
   <!-- RESULT -->
 
   <div id="result">
+
     Point the camera at a participant QR code.
+
   </div>
 
 
@@ -280,6 +296,7 @@
     Scan Next Participant
 
   </button>
+
 
 </div>
 
@@ -336,7 +353,10 @@ let processing =
  */
 
 
-function showResult(message, className = "") {
+function showResult(
+  message,
+  className = ""
+) {
 
   const result =
     document.getElementById("result");
@@ -346,7 +366,15 @@ function showResult(message, className = "") {
 
   result.className =
     className;
+
 }
+
+
+/*
+ * =====================================================
+ * MODE SELECTION
+ * =====================================================
+ */
 
 
 function setMode(mode) {
@@ -355,59 +383,109 @@ function setMode(mode) {
     return;
   }
 
-  currentMode = mode;
+
+  currentMode =
+    mode;
+
 
   const eventButton =
-    document.getElementById("eventModeButton");
+    document.getElementById(
+      "eventModeButton"
+    );
+
 
   const sessionButton =
-    document.getElementById("sessionModeButton");
+    document.getElementById(
+      "sessionModeButton"
+    );
+
 
   const foodButton =
-    document.getElementById("foodModeButton");
+    document.getElementById(
+      "foodModeButton"
+    );
+
 
   const sessionSection =
-    document.getElementById("sessionSection");
+    document.getElementById(
+      "sessionSection"
+    );
+
 
   const foodSection =
-    document.getElementById("foodSection");
+    document.getElementById(
+      "foodSection"
+    );
 
 
-  // Remove active state from all buttons
-  eventButton.classList.remove("active");
-  sessionButton.classList.remove("active");
-  foodButton.classList.remove("active");
+  eventButton.classList.remove(
+    "active"
+  );
 
 
-  // Hide all selectors first
-  sessionSection.classList.add("hidden");
-  foodSection.classList.add("hidden");
+  sessionButton.classList.remove(
+    "active"
+  );
 
 
-  // EVENT CHECK-IN
+  foodButton.classList.remove(
+    "active"
+  );
+
+
+  sessionSection.classList.add(
+    "hidden"
+  );
+
+
+  foodSection.classList.add(
+    "hidden"
+  );
+
+
+  /*
+   * EVENT CHECK-IN
+   */
+
   if (mode === "event") {
 
-    eventButton.classList.add("active");
+    eventButton.classList.add(
+      "active"
+    );
 
   }
 
 
-  // SESSION ENTRY
+  /*
+   * SESSION ENTRY
+   */
+
   else if (mode === "session") {
 
-    sessionButton.classList.add("active");
+    sessionButton.classList.add(
+      "active"
+    );
 
-    sessionSection.classList.remove("hidden");
+    sessionSection.classList.remove(
+      "hidden"
+    );
 
   }
 
 
-  // FOOD CLAIM
+  /*
+   * FOOD CLAIM
+   */
+
   else if (mode === "food") {
 
-    foodButton.classList.add("active");
+    foodButton.classList.add(
+      "active"
+    );
 
-    foodSection.classList.remove("hidden");
+    foodSection.classList.remove(
+      "hidden"
+    );
 
   }
 
@@ -415,6 +493,7 @@ function setMode(mode) {
   showResult(
     "Point the camera at a participant QR code."
   );
+
 }
 
 
@@ -438,10 +517,13 @@ function loadSessions() {
       try {
 
         const select =
-          document.getElementById("sessionSelect");
+          document.getElementById(
+            "sessionSelect"
+          );
 
 
-        select.innerHTML = "";
+        select.innerHTML =
+          "";
 
 
         if (
@@ -452,16 +534,26 @@ function loadSessions() {
         ) {
 
           const option =
-            document.createElement("option");
+            document.createElement(
+              "option"
+            );
 
-          option.value = "";
+
+          option.value =
+            "";
+
 
           option.textContent =
             "No active sessions available";
 
-          select.appendChild(option);
+
+          select.appendChild(
+            option
+          );
+
 
           return;
+
         }
 
 
@@ -469,27 +561,51 @@ function loadSessions() {
           function(session) {
 
             const option =
-              document.createElement("option");
+              document.createElement(
+                "option"
+              );
+
 
             option.value =
               session.sessionId;
+
 
             option.textContent =
               session.name +
               " — " +
               session.sessionId;
 
-            select.appendChild(option);
+
+            select.appendChild(
+              option
+            );
 
           }
         );
 
-      } finally {
+      }
 
-        delete window[callbackName];
+      catch (error) {
+
+        console.error(
+          "Session loading error:",
+          error
+        );
+
+      }
+
+      finally {
+
+        delete window[
+          callbackName
+        ];
+
 
         const script =
-          document.getElementById(callbackName);
+          document.getElementById(
+            callbackName
+          );
+
 
         if (script) {
           script.remove();
@@ -504,11 +620,15 @@ function loadSessions() {
     APPS_SCRIPT_URL +
     "?api=sessions" +
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      callbackName
+    );
 
 
   const script =
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
 
 
   script.id =
@@ -522,7 +642,10 @@ function loadSessions() {
   script.onerror =
     function() {
 
-      delete window[callbackName];
+      delete window[
+        callbackName
+      ];
+
 
       showResult(
         "❌ Unable to load sessions.",
@@ -532,9 +655,18 @@ function loadSessions() {
     };
 
 
-  document.body.appendChild(script);
+  document.body.appendChild(
+    script
+  );
 
 }
+
+
+/*
+ * =====================================================
+ * LOAD FOOD TYPES
+ * =====================================================
+ */
 
 
 function loadFoodTypes() {
@@ -543,15 +675,21 @@ function loadFoodTypes() {
     "foodTypesCallback_" +
     Date.now();
 
+
   window[callbackName] =
     function(response) {
 
       try {
 
         const select =
-          document.getElementById("foodSelect");
+          document.getElementById(
+            "foodSelect"
+          );
 
-        select.innerHTML = "";
+
+        select.innerHTML =
+          "";
+
 
         if (
           !response ||
@@ -561,26 +699,42 @@ function loadFoodTypes() {
         ) {
 
           const option =
-            document.createElement("option");
+            document.createElement(
+              "option"
+            );
 
-          option.value = "";
+
+          option.value =
+            "";
+
 
           option.textContent =
             "No active food options available";
 
-          select.appendChild(option);
+
+          select.appendChild(
+            option
+          );
+
 
           return;
+
         }
 
 
         const placeholder =
-          document.createElement("option");
+          document.createElement(
+            "option"
+          );
 
-        placeholder.value = "";
+
+        placeholder.value =
+          "";
+
 
         placeholder.textContent =
           "Select food item";
+
 
         select.appendChild(
           placeholder
@@ -591,13 +745,18 @@ function loadFoodTypes() {
           function(food) {
 
             const option =
-              document.createElement("option");
+              document.createElement(
+                "option"
+              );
+
 
             option.value =
               food.foodTypeId;
 
+
             option.textContent =
               food.foodType;
+
 
             select.appendChild(
               option
@@ -608,14 +767,27 @@ function loadFoodTypes() {
 
       }
 
+      catch (error) {
+
+        console.error(
+          "Food type loading error:",
+          error
+        );
+
+      }
+
       finally {
 
-        delete window[callbackName];
+        delete window[
+          callbackName
+        ];
+
 
         const script =
           document.getElementById(
             callbackName
           );
+
 
         if (script) {
           script.remove();
@@ -636,10 +808,14 @@ function loadFoodTypes() {
 
 
   const script =
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
+
 
   script.id =
     callbackName;
+
 
   script.src =
     url;
@@ -648,7 +824,10 @@ function loadFoodTypes() {
   script.onerror =
     function() {
 
-      delete window[callbackName];
+      delete window[
+        callbackName
+      ];
+
 
       showResult(
         "❌ Unable to load food options.",
@@ -661,6 +840,7 @@ function loadFoodTypes() {
   document.body.appendChild(
     script
   );
+
 }
 
 
@@ -677,30 +857,38 @@ function startScanner() {
     scanning ||
     processing
   ) {
+
     return;
+
   }
 
 
   scanner =
-    new Html5Qrcode("reader");
+    new Html5Qrcode(
+      "reader"
+    );
 
 
   scanner.start(
 
     {
-      facingMode: "environment"
+      facingMode:
+        "environment"
     },
 
     {
-      fps: 10,
+      fps:
+        10,
 
       qrbox: {
-        width: 250,
-        height: 250
+        width:
+          250,
+
+        height:
+          250
       }
 
     },
-
 
     function(decodedText) {
 
@@ -717,45 +905,53 @@ function startScanner() {
         false;
 
 
-      processScan(decodedText);
+      processScan(
+        decodedText
+      );
 
     },
 
-
     function(errorMessage) {
 
-      // Normal QR scanning errors are ignored.
+      /*
+       * Normal QR scanning
+       * errors are ignored.
+       */
 
     }
 
   )
 
-  .then(function() {
+  .then(
+    function() {
 
-    scanning =
-      true;
-
-
-    showResult(
-      "Camera active.<br>" +
-      "Point it at a participant QR code."
-    );
-
-  })
-
-  .catch(function(error) {
-
-    scanning =
-      false;
+      scanning =
+        true;
 
 
-    showResult(
-      "Camera failed:<br>" +
-      escapeHtml(error),
-      "denied"
-    );
+      showResult(
+        "Camera active.<br>" +
+        "Point it at a participant QR code."
+      );
 
-  });
+    }
+  )
+
+  .catch(
+    function(error) {
+
+      scanning =
+        false;
+
+
+      showResult(
+        "Camera failed:<br>" +
+        escapeHtml(error),
+        "denied"
+      );
+
+    }
+  );
 
 }
 
@@ -767,8 +963,9 @@ function startScanner() {
  */
 
 
-function processScan(scannedValue) {
-
+function processScan(
+  scannedValue
+) {
 
   showResult(
 
@@ -776,7 +973,9 @@ function processScan(scannedValue) {
 
     "<div class='participant'>" +
 
-    escapeHtml(scannedValue) +
+    escapeHtml(
+      scannedValue
+    ) +
 
     "</div>",
 
@@ -788,28 +987,34 @@ function processScan(scannedValue) {
   if (scanner) {
 
     scanner.stop()
-      .catch(function(error) {
 
-        console.log(
-          "Scanner stop error:",
-          error
-        );
+      .catch(
+        function(error) {
 
-      });
+          console.log(
+            "Scanner stop error:",
+            error
+          );
+
+        }
+      );
 
   }
 
 
   const participantId =
-    String(scannedValue).trim();
+    String(
+      scannedValue
+    ).trim();
 
 
   /*
    * EVENT CHECK-IN
    */
 
-
-  if (currentMode === "event") {
+  if (
+    currentMode === "event"
+  ) {
 
     sendEventCheckin(
       participantId
@@ -819,15 +1024,20 @@ function processScan(scannedValue) {
 
   }
 
+
   /*
    * FOOD CLAIM
    */
-  if (currentMode === "food") {
+
+  if (
+    currentMode === "food"
+  ) {
 
     const foodTypeId =
       document.getElementById(
-         "foodSelect"
+        "foodSelect"
       ).value;
+
 
     if (!foodTypeId) {
 
@@ -836,23 +1046,30 @@ function processScan(scannedValue) {
         "denied"
       );
 
-      processing = false;
+
+      processing =
+        false;
+
 
       return;
+
     }
+
 
     sendFoodClaim(
       participantId,
       foodTypeId
     );
 
+
     return;
-}
+
+  }
+
 
   /*
    * SESSION ENTRY
    */
-
 
   const sessionId =
     document.getElementById(
@@ -867,8 +1084,10 @@ function processScan(scannedValue) {
       "denied"
     );
 
+
     processing =
       false;
+
 
     return;
 
@@ -909,12 +1128,38 @@ function sendEventCheckin(
           participantId
         );
 
-      } finally {
+      }
 
-        delete window[callbackName];
+      catch (error) {
+
+        console.error(
+          "Check-in result error:",
+          error
+        );
+
+        showResult(
+          "❌ Unable to display check-in result.",
+          "denied"
+        );
+
+      }
+
+      finally {
+
+        processing =
+          false;
+
+
+        delete window[
+          callbackName
+        ];
+
 
         const script =
-          document.getElementById(callbackName);
+          document.getElementById(
+            callbackName
+          );
+
 
         if (script) {
           script.remove();
@@ -931,16 +1176,24 @@ function sendEventCheckin(
     "?api=checkin" +
 
     "&participantId=" +
-    encodeURIComponent(participantId) +
+    encodeURIComponent(
+      participantId
+    ) +
 
     "&scannerId=" +
-    encodeURIComponent(SCANNER_ID) +
+    encodeURIComponent(
+      SCANNER_ID
+    ) +
 
     "&volunteerId=" +
-    encodeURIComponent(VOLUNTEER_ID) +
+    encodeURIComponent(
+      VOLUNTEER_ID
+    ) +
 
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      callbackName
+    );
 
 
   injectJsonp(
@@ -979,12 +1232,38 @@ function sendSessionScan(
           sessionId
         );
 
-      } finally {
+      }
 
-        delete window[callbackName];
+      catch (error) {
+
+        console.error(
+          "Session result error:",
+          error
+        );
+
+        showResult(
+          "❌ Unable to display session result.",
+          "denied"
+        );
+
+      }
+
+      finally {
+
+        processing =
+          false;
+
+
+        delete window[
+          callbackName
+        ];
+
 
         const script =
-          document.getElementById(callbackName);
+          document.getElementById(
+            callbackName
+          );
+
 
         if (script) {
           script.remove();
@@ -1001,19 +1280,29 @@ function sendSessionScan(
     "?api=session" +
 
     "&participantId=" +
-    encodeURIComponent(participantId) +
+    encodeURIComponent(
+      participantId
+    ) +
 
     "&sessionId=" +
-    encodeURIComponent(sessionId) +
+    encodeURIComponent(
+      sessionId
+    ) +
 
     "&scannerId=" +
-    encodeURIComponent(SCANNER_ID) +
+    encodeURIComponent(
+      SCANNER_ID
+    ) +
 
     "&volunteerId=" +
-    encodeURIComponent(VOLUNTEER_ID) +
+    encodeURIComponent(
+      VOLUNTEER_ID
+    ) +
 
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      callbackName
+    );
 
 
   injectJsonp(
@@ -1024,56 +1313,112 @@ function sendSessionScan(
 }
 
 
+/*
+ * =====================================================
+ * FOOD CLAIM API
+ * =====================================================
+ */
+
+
 function sendFoodClaim(
   participantId,
   foodTypeId
 ) {
 
   const callbackName =
-    "foodClaimCallback_" + Date.now();
+    "foodClaimCallback_" +
+    Date.now();
 
- window[callbackName] =
-  function(response) {
 
-    console.log(
-      "Food Claim API response:",
-      response
-    );
+  window[callbackName] =
+    function(response) {
 
-    showFoodResult(
-      response,
-      participantId,
-      foodTypeId
-    );
+      console.log(
+        "Food Claim API response:",
+        response
+      );
 
-    processing = false;
-    const script =
-        document.getElementById(
-          callbackName
+
+      try {
+
+        showFoodResult(
+          response,
+          participantId,
+          foodTypeId
         );
 
-      if (script) {
-        script.remove();
       }
 
-      delete window[callbackName];
+      catch (error) {
+
+        console.error(
+          "Food result display error:",
+          error
+        );
+
+
+        showResult(
+          "❌ Unable to display food claim result.",
+          "denied"
+        );
+
+      }
+
+      finally {
+
+        processing =
+          false;
+
+
+        delete window[
+          callbackName
+        ];
+
+
+        const script =
+          document.getElementById(
+            callbackName
+          );
+
+
+        if (script) {
+          script.remove();
+        }
+
+      }
 
     };
 
 
   const url =
     APPS_SCRIPT_URL +
+
     "?api=food" +
+
     "&participantId=" +
-    encodeURIComponent(participantId) +
+    encodeURIComponent(
+      participantId
+    ) +
+
     "&foodTypeId=" +
-    encodeURIComponent(foodTypeId) +
+    encodeURIComponent(
+      foodTypeId
+    ) +
+
     "&scannerId=" +
-    encodeURIComponent(SCANNER_ID) +
+    encodeURIComponent(
+      SCANNER_ID
+    ) +
+
     "&volunteerId=" +
-    encodeURIComponent(VOLUNTEER_ID) +
+    encodeURIComponent(
+      VOLUNTEER_ID
+    ) +
+
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      callbackName
+    );
 
 
   console.log(
@@ -1082,40 +1427,13 @@ function sendFoodClaim(
   );
 
 
-  const script =
-    document.createElement("script");
-
-  script.id =
-    callbackName;
-
-  script.src =
-    url;
-
-  script.onerror =
-    function() {
-
-      console.error(
-        "Food Claim API request failed."
-      );
-
-      showResult(
-        "❌ Unable to contact the food claim server.",
-        "denied"
-      );
-
-      processing = false;
-
-      delete window[callbackName];
-
-      script.remove();
-
-    };
-
-
-  document.body.appendChild(
-    script
+  injectJsonp(
+    callbackName,
+    url
   );
+
 }
+
 
 /*
  * =====================================================
@@ -1130,7 +1448,9 @@ function injectJsonp(
 ) {
 
   const script =
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
 
 
   script.id =
@@ -1144,14 +1464,28 @@ function injectJsonp(
   script.onerror =
     function() {
 
+      console.error(
+        "JSONP request failed:",
+        url
+      );
+
+
       showResult(
-        "❌ Unable to contact the check-in server.",
+        "❌ Unable to contact the server.",
         "denied"
       );
 
 
       processing =
         false;
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      script.remove();
 
     };
 
@@ -1189,7 +1523,9 @@ function showCheckinResult(
 
       "Participant: " +
 
-      escapeHtml(participantId) +
+      escapeHtml(
+        participantId
+      ) +
 
       "<br>" +
 
@@ -1203,7 +1539,9 @@ function showCheckinResult(
 
     );
 
-  } else {
+  }
+
+  else {
 
     showResult(
 
@@ -1213,7 +1551,9 @@ function showCheckinResult(
 
       "Participant: " +
 
-      escapeHtml(participantId) +
+      escapeHtml(
+        participantId
+      ) +
 
       "<br>" +
 
@@ -1266,13 +1606,17 @@ function showSessionResult(
 
       "Participant: " +
 
-      escapeHtml(participantId) +
+      escapeHtml(
+        participantId
+      ) +
 
       "<br>" +
 
       "Session: " +
 
-      escapeHtml(sessionId) +
+      escapeHtml(
+        sessionId
+      ) +
 
       "<br>" +
 
@@ -1286,7 +1630,9 @@ function showSessionResult(
 
     );
 
-  } else {
+  }
+
+  else {
 
     showResult(
 
@@ -1296,13 +1642,17 @@ function showSessionResult(
 
       "Participant: " +
 
-      escapeHtml(participantId) +
+      escapeHtml(
+        participantId
+      ) +
 
       "<br>" +
 
       "Session: " +
 
-      escapeHtml(sessionId) +
+      escapeHtml(
+        sessionId
+      ) +
 
       "<br>" +
 
@@ -1330,6 +1680,120 @@ function showSessionResult(
 
 /*
  * =====================================================
+ * FOOD RESULT
+ * =====================================================
+ */
+
+
+function showFoodResult(
+  response,
+  participantId,
+  foodTypeId
+) {
+
+  if (
+    response &&
+    response.success === true &&
+    response.result === "APPROVED"
+  ) {
+
+    showResult(
+
+      "🟢 FOOD CLAIM APPROVED" +
+
+      "<div class='participant'>" +
+
+      "Participant: " +
+
+      escapeHtml(
+        participantId
+      ) +
+
+      "<br>" +
+
+      "Food: " +
+
+      escapeHtml(
+        foodTypeId
+      ) +
+
+      "<br>" +
+
+      escapeHtml(
+        response.reason ||
+        "Food claim approved."
+      ) +
+
+      "</div>",
+
+      "approved"
+
+    );
+
+    return;
+
+  }
+
+
+  const result =
+    response &&
+    response.result
+      ? response.result
+      : "DENIED";
+
+
+  const reason =
+    response &&
+    response.reason
+      ? response.reason
+      : "Food claim could not be approved.";
+
+
+  showResult(
+
+    "🔴 FOOD CLAIM DENIED" +
+
+    "<div class='participant'>" +
+
+    "Participant: " +
+
+    escapeHtml(
+      participantId
+    ) +
+
+    "<br>" +
+
+    "Food: " +
+
+    escapeHtml(
+      foodTypeId
+    ) +
+
+    "<br>" +
+
+    "Result: " +
+
+    escapeHtml(
+      result
+    ) +
+
+    "<br>" +
+
+    escapeHtml(
+      reason
+    ) +
+
+    "</div>",
+
+    "denied"
+
+  );
+
+}
+
+
+/*
+ * =====================================================
  * RESTART
  * =====================================================
  */
@@ -1341,9 +1805,60 @@ function restartScanner() {
     false;
 
 
+  scanning =
+    false;
+
+
+  if (scanner) {
+
+    scanner.stop()
+
+      .catch(
+        function(error) {
+
+          console.log(
+            "Scanner restart stop error:",
+            error
+          );
+
+        }
+      )
+
+      .finally(
+        function() {
+
+          scanner =
+            null;
+
+
+          document.getElementById(
+            "reader"
+          ).innerHTML =
+            "";
+
+
+          showResult(
+            "Starting camera..."
+          );
+
+
+          setTimeout(
+            startScanner,
+            300
+          );
+
+        }
+      );
+
+    return;
+
+  }
+
+
   document.getElementById(
     "reader"
-  ).innerHTML = "";
+  ).innerHTML =
+    "";
 
 
   showResult(
@@ -1366,9 +1881,13 @@ function restartScanner() {
  */
 
 
-function escapeHtml(value) {
+function escapeHtml(
+  value
+) {
 
-  return String(value)
+  return String(
+    value
+  )
 
     .replace(
       /&/g,
@@ -1416,7 +1935,10 @@ window.onload =
 
   };
 
+
 </script>
 
+
 </body>
+
 </html>
