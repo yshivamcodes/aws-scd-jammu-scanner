@@ -537,6 +537,133 @@ function loadSessions() {
 }
 
 
+function loadFoodTypes() {
+
+  const callbackName =
+    "foodTypesCallback_" +
+    Date.now();
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        const select =
+          document.getElementById("foodSelect");
+
+        select.innerHTML = "";
+
+        if (
+          !response ||
+          !response.success ||
+          !response.food ||
+          response.food.length === 0
+        ) {
+
+          const option =
+            document.createElement("option");
+
+          option.value = "";
+
+          option.textContent =
+            "No active food options available";
+
+          select.appendChild(option);
+
+          return;
+        }
+
+
+        const placeholder =
+          document.createElement("option");
+
+        placeholder.value = "";
+
+        placeholder.textContent =
+          "Select food item";
+
+        select.appendChild(
+          placeholder
+        );
+
+
+        response.food.forEach(
+          function(food) {
+
+            const option =
+              document.createElement("option");
+
+            option.value =
+              food.foodTypeId;
+
+            option.textContent =
+              food.foodType;
+
+            select.appendChild(
+              option
+            );
+
+          }
+        );
+
+      }
+
+      finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(
+            callbackName
+          );
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const url =
+    APPS_SCRIPT_URL +
+    "?api=foodTypes" +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  const script =
+    document.createElement("script");
+
+  script.id =
+    callbackName;
+
+  script.src =
+    url;
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      showResult(
+        "❌ Unable to load food options.",
+        "denied"
+      );
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
+}
+
+
 /*
  * =====================================================
  * START CAMERA
@@ -1160,6 +1287,8 @@ window.onload =
   function() {
 
     loadSessions();
+
+    loadFoodTypes();
 
     startScanner();
 
