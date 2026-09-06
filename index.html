@@ -995,6 +995,65 @@ function sendSessionScan(
 }
 
 
+function sendFoodClaim(
+  participantId,
+  foodTypeId
+) {
+
+  const callbackName =
+    "foodClaimCallback_" +
+    Date.now();
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        showFoodResult(
+          response,
+          participantId,
+          foodTypeId
+        );
+
+      } finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(
+            callbackName
+          );
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const url =
+    APPS_SCRIPT_URL +
+    "?api=food" +
+    "&participantId=" +
+    encodeURIComponent(participantId) +
+    "&foodTypeId=" +
+    encodeURIComponent(foodTypeId) +
+    "&scannerId=" +
+    encodeURIComponent(SCANNER_ID) +
+    "&volunteerId=" +
+    encodeURIComponent(VOLUNTEER_ID) +
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  injectJsonp(
+    callbackName,
+    url
+  );
+}
+
 /*
  * =====================================================
  * JSONP REQUEST
