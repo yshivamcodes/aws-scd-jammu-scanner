@@ -355,34 +355,45 @@ function setMode(mode) {
     return;
   }
 
-
-  currentMode =
-    mode;
-
+  currentMode = mode;
 
   const eventButton =
     document.getElementById("eventModeButton");
 
-
   const sessionButton =
     document.getElementById("sessionModeButton");
 
+  const foodButton =
+    document.getElementById("foodModeButton");
 
   const sessionSection =
     document.getElementById("sessionSection");
 
+  const foodSection =
+    document.getElementById("foodSection");
 
+
+  // Remove active state from all buttons
+  eventButton.classList.remove("active");
+  sessionButton.classList.remove("active");
+  foodButton.classList.remove("active");
+
+
+  // Hide all selectors first
+  sessionSection.classList.add("hidden");
+  foodSection.classList.add("hidden");
+
+
+  // EVENT CHECK-IN
   if (mode === "event") {
 
     eventButton.classList.add("active");
 
-    sessionButton.classList.remove("active");
+  }
 
-    sessionSection.classList.add("hidden");
 
-  } else {
-
-    eventButton.classList.remove("active");
+  // SESSION ENTRY
+  else if (mode === "session") {
 
     sessionButton.classList.add("active");
 
@@ -391,10 +402,19 @@ function setMode(mode) {
   }
 
 
+  // FOOD CLAIM
+  else if (mode === "food") {
+
+    foodButton.classList.add("active");
+
+    foodSection.classList.remove("hidden");
+
+  }
+
+
   showResult(
     "Point the camera at a participant QR code."
   );
-
 }
 
 
