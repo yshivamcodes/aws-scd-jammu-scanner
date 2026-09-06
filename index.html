@@ -1772,79 +1772,71 @@ function sendFoodClaim(
        */
 
 
-      function restartScanner() {
+function restartScanner() {
 
-        processing =
-          false;
+  processing = false;
+  scanning = false;
 
+  const reader =
+    document.getElementById("reader");
 
-        scanning =
-          false;
+  if (scanner) {
 
+    try {
 
-        if (scanner) {
+      scanner.stop()
+        .catch(function(error) {
 
-          scanner.stop()
+          console.log(
+            "Scanner already stopped:",
+            error
+          );
 
-            .catch(
-              function(error) {
+        })
+        .finally(function() {
 
-                console.log(
-                  "Scanner restart stop error:",
-                  error
-                );
+          scanner = null;
+          reader.innerHTML = "";
 
-              }
-            )
+          showResult(
+            "Starting camera..."
+          );
 
-            .finally(
-              function() {
+          setTimeout(
+            function() {
+              startScanner();
+            },
+            500
+          );
 
-                scanner =
-                  null;
+        });
 
+      return;
 
-                document.getElementById(
-                  "reader"
-                ).innerHTML =
-                  "";
+    } catch (error) {
 
+      console.log(
+        "Scanner was already stopped:",
+        error
+      );
 
-                showResult(
-                  "Starting camera..."
-                );
+      scanner = null;
+    }
+  }
 
+  reader.innerHTML = "";
 
-                setTimeout(
-                  startScanner,
-                  300
-                );
+  showResult(
+    "Starting camera..."
+  );
 
-              }
-            );
-
-          return;
-
-        }
-
-
-        document.getElementById(
-          "reader"
-        ).innerHTML =
-          "";
-
-
-        showResult(
-          "Starting camera..."
-        );
-
-
-        setTimeout(
-          startScanner,
-          300
-        );
-
-      }
+  setTimeout(
+    function() {
+      startScanner();
+    },
+    500
+  );
+}
 
 
       /*
